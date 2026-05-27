@@ -488,8 +488,32 @@
     .form-group textarea:focus,
     .form-group select:focus { border-color: var(--orange); }
     .form-group textarea { min-height: 110px; }
-    .form-submit { width: 100%; background: var(--orange); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit; }
-    .form-submit:hover { background: var(--orange-dark); }
+    .form-group select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 36px;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #c1c8d0; }
+    .form-submit { width: 100%; background: var(--orange); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s, opacity 0.2s; font-family: inherit; }
+    .form-submit:hover:not(:disabled) { background: var(--orange-dark); }
+    .form-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+    .modal-close:hover { background: var(--orange-dark); }
+    .error-toast {
+      display: none;
+      background: #fef2f2;
+      border: 1.5px solid #fca5a5;
+      border-radius: 10px;
+      padding: 13px 16px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: #7f1d1d;
+      line-height: 1.55;
+    }
+    .error-toast.show { display: block; }
 
     footer { background: var(--dark); color: #9ca3af; padding: 72px 24px 32px; }
     .footer-inner { max-width: 1200px; margin: 0 auto; }
@@ -810,17 +834,23 @@
 
       <div class="contact-form fade-up fade-up-delay-3">
         <h3>Client Intake Form</h3>
-        <form id="intakeForm" onsubmit="handleIntakeSubmit(event)">
+        <!-- ERROR TOAST — shown on EmailJS failure -->
+        <div class="error-toast" id="errorToast">
+          ❌ Something went wrong sending your request. Please try again, or email us directly at
+          <a href="mailto:info@maclesotho.com" style="color:var(--orange);">info@maclesotho.com</a>.
+        </div>
+
+        <form id="intakeForm" novalidate>
 
           <p class="form-section-label">Personal Details</p>
           <div class="form-row">
             <div class="form-group">
               <label for="if_fname">First Name <span class="req">*</span></label>
-              <input type="text" id="if_fname" name="first_name" placeholder="e.g. John" required />
+              <input type="text" id="if_fname" name="first_name" placeholder="e.g. John" autocomplete="given-name" required />
             </div>
             <div class="form-group">
               <label for="if_lname">Last Name <span class="req">*</span></label>
-              <input type="text" id="if_lname" name="last_name" placeholder="e.g. Doe" required />
+              <input type="text" id="if_lname" name="last_name" placeholder="e.g. Banda" autocomplete="family-name" required />
             </div>
           </div>
           <div class="form-group">
@@ -848,14 +878,14 @@
             </div>
             <div class="form-group">
               <label for="if_country">Country of Residence <span class="req">*</span></label>
-              <input type="text" id="if_country" name="country_of_residence" placeholder="e.g. Lesotho" required />
+              <input type="text" id="if_country" name="country_residence" placeholder="e.g. Lesotho" required />
             </div>
           </div>
 
           <p class="form-section-label">Service Requested</p>
           <div class="form-group">
             <label for="if_service">Immigration Service Required <span class="req">*</span></label>
-            <select id="if_service" name="service_requested" required>
+            <select id="if_service" name="service" required>
               <option value="">Select a service...</option>
               <option value="Visa Advisory — Tourist / Business / Transit / Family Visit">Visa Advisory — Tourist / Business / Transit / Family Visit</option>
               <option value="Temporary Residence Permit — New Application">Temporary Residence Permit — New Application</option>
@@ -880,7 +910,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="if_current_status">Current Permit / Visa Status</label>
-              <select id="if_current_status" name="current_immigration_status">
+              <select id="if_current_status" name="visa_status">
                 <option value="">Select...</option>
                 <option value="No current permit">No current permit</option>
                 <option value="Valid temporary residence permit">Valid temporary residence permit</option>
@@ -894,14 +924,14 @@
             </div>
             <div class="form-group">
               <label for="if_years_in_ls">Years in Lesotho (if applicable)</label>
-              <input type="number" id="if_years_in_ls" name="years_in_lesotho" placeholder="e.g. 3" min="0" max="80" />
+              <input type="number" id="if_years_in_ls" name="years_lesotho" placeholder="e.g. 3" min="0" max="80" />
             </div>
           </div>
 
           <p class="form-section-label">Background Declaration</p>
           <div class="form-group">
             <label for="if_criminal">Do you have any pending criminal charges or convictions? <span class="req">*</span></label>
-            <select id="if_criminal" name="criminal_record_declaration" required>
+            <select id="if_criminal" name="criminal_charges" required>
               <option value="">Select...</option>
               <option value="No">No</option>
               <option value="Yes — will disclose at consultation">Yes — will disclose at consultation</option>
@@ -910,7 +940,7 @@
           </div>
           <div class="form-group">
             <label for="if_prev_rejected">Have you previously had a permit or visa application rejected? <span class="req">*</span></label>
-            <select id="if_prev_rejected" name="previous_application_rejection" required>
+            <select id="if_prev_rejected" name="visa_rejection" required>
               <option value="">Select...</option>
               <option value="No">No</option>
               <option value="Yes — will provide details at consultation">Yes — will provide details at consultation</option>
@@ -925,7 +955,7 @@
 
           <div class="form-group form-consent">
             <label class="consent-label">
-              <input type="checkbox" id="if_consent" name="consent" required />
+              <input type="checkbox" id="if_consent" required />
               <span>I confirm that all information provided is accurate and complete. I understand that providing false information may result in termination of services without refund and may have legal consequences. I consent to MAC processing my personal data for the purpose of this enquiry.</span>
             </label>
           </div>
@@ -1051,12 +1081,12 @@
 </footer>
 
 <!-- THANK YOU MODAL -->
-<div class="modal-overlay" id="thankYouModal">
+<div class="modal-overlay" id="thankYouModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
-    <div class="modal-icon">✓</div>
-    <h3>Request Submitted!</h3>
+    <div class="modal-icon" aria-hidden="true">✓</div>
+    <h3 id="modalTitle">Request Submitted!</h3>
     <p>Thank you for submitting your consultation request to the Migration Advisory Centre. Our advisor will review your information and contact you within one business day.</p>
-    <button class="modal-close" onclick="closeModal()">Close</button>
+    <button class="modal-close">Close</button>
   </div>
 </div>
 
@@ -1097,50 +1127,93 @@
 
   /* ═══════════════════════════════════════════════════════════════
      INTAKE FORM SUBMISSION
+     Uses emailjs.sendForm() — reads name="" attributes directly
+     from the form, so every field is always captured correctly.
+     Template variables must match name="" attributes:
+       full_name, email, phone, occupation, physical_address,
+       nationality, country_residence, service, destination_country,
+       visa_status, years_lesotho, criminal_charges, visa_rejection,
+       additional_information
   ═══════════════════════════════════════════════════════════════ */
-  function handleIntakeSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const btn  = form.querySelector('.form-submit');
-    btn.textContent = 'Sending\u2026';
-    btn.disabled = true;
+  const intakeForm   = document.getElementById('intakeForm');
+  const submitBtn    = intakeForm.querySelector('.form-submit');
+  const thankYouModal= document.getElementById('thankYouModal');
+  const errorToast   = document.getElementById('errorToast');
 
+  intakeForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Hide any previous error toast
+    errorToast.classList.remove('show');
+
+    // Native HTML5 validation
+    if (!intakeForm.checkValidity()) {
+      intakeForm.reportValidity();
+      return;
+    }
+
+    // Disable button + show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending\u2026';
+    /*
+     * Build an explicit params object — every key maps directly to the
+     * EmailJS template variable name, every value is read from its
+     * specific element ID. Nothing is left to name="" matching.
+     */
+    const fName = document.getElementById('if_fname').value;
+    const lName = document.getElementById('if_lname').value;
     const templateParams = {
-      first_name:                     document.getElementById('if_fname').value,
-      last_name:                      document.getElementById('if_lname').value,
-      email:                          document.getElementById('if_email').value,
-      phone:                          document.getElementById('if_phone').value,
-      occupation:                     document.getElementById('if_occupation').value,
-      physical_address:               document.getElementById('if_address').value,
-      nationality:                    document.getElementById('if_nationality').value,
-      country_of_residence:           document.getElementById('if_country').value,
-      service_requested:              document.getElementById('if_service').value,
-      destination_country:            document.getElementById('if_destination').value,
-      current_immigration_status:     document.getElementById('if_current_status').value,
-      years_in_lesotho:               document.getElementById('if_years_in_ls').value,
-      criminal_record_declaration:    document.getElementById('if_criminal').value,
-      previous_application_rejection: document.getElementById('if_prev_rejected').value,
-      additional_information:         document.getElementById('if_message').value,
+      name:               fName + ' ' + lName,   // {{name}} — used in email subject line
+      first_name:         fName,                  // {{first_name}}
+      last_name:          lName,                  // {{last_name}}
+      email:              document.getElementById('if_email').value,
+      phone:              document.getElementById('if_phone').value,
+      occupation:         document.getElementById('if_occupation').value,
+      address:            document.getElementById('if_address').value,       // {{address}}
+      nationality:        document.getElementById('if_nationality').value,
+      country_residence:  document.getElementById('if_country').value,
+      service:            document.getElementById('if_service').value,
+      destination_country:document.getElementById('if_destination').value,
+      visa_status:        document.getElementById('if_current_status').value,
+      years_lesotho:      document.getElementById('if_years_in_ls').value,
+      criminal_record:    document.getElementById('if_criminal').value,      // {{criminal_record}}
+      visa_rejection:     document.getElementById('if_prev_rejected').value,
+      additional_info:    document.getElementById('if_message').value,       // {{additional_info}}
     };
 
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-      .then(() => {
-        document.getElementById('thankYouModal').classList.add('open');
-        form.reset();
-        btn.textContent = 'Submit Consultation Request \u2192';
-        btn.disabled = false;
+      .then(function () {
+        intakeForm.reset();
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Consultation Request \u2192';
+        thankYouModal.classList.add('open');
+        thankYouModal.querySelector('.modal-close').focus();
       })
-      .catch((err) => {
-        alert('Sorry, something went wrong. Please try again or email us directly at info@maclesotho.com');
+      .catch(function (err) {
         console.error('EmailJS error:', err);
-        btn.textContent = 'Submit Consultation Request \u2192';
-        btn.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Consultation Request \u2192';
+        errorToast.classList.add('show');
+        errorToast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
+  });
+
+  /* ═══════════════════════════════════════════════════════════════
+     MODAL CLOSE — button, backdrop, and ESC key
+  ═══════════════════════════════════════════════════════════════ */
+  function closeModal() {
+    thankYouModal.classList.remove('open');
   }
 
-  function closeModal() {
-    document.getElementById('thankYouModal').classList.remove('open');
-  }
+  document.querySelector('.modal-close').addEventListener('click', closeModal);
+
+  thankYouModal.addEventListener('click', function (e) {
+    if (e.target === thankYouModal) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && thankYouModal.classList.contains('open')) closeModal();
+  });
 
   function toggleNav() {
     document.getElementById('mainNav').classList.toggle('open');
